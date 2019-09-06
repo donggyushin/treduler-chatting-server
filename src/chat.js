@@ -40,6 +40,8 @@ io.on('connection', socket => {
         if (exist === false) {
             clients.push(socket)
             console.log('user logged in: ', socket.user)
+            const allMembers = members();
+            io.emit('member_list', allMembers)
         }
     })
     socket.on('disconnect', () => {
@@ -52,7 +54,30 @@ io.on('connection', socket => {
             }
         })
         clients = updatedClients
+        const allMembers = members()
+        io.emit('member_list', allMembers)
     })
+
+    socket.on('sendMessage', data => {
+        const { user, boardId, message } = data;
+        const usersToSendMessage = clients.filter(client => {
+            if (client.boardId === boardId) {
+                return true;
+            } else {
+                return false;
+            }
+        })
+        usersToSendMessage.emit('sendMessage', data);
+    })
+
+
 })
+
+const members = () => {
+    const members = clients.map(client => {
+        return client.user
+    })
+    return members
+}
 
 server.listen(PORT, () => console.log(`Chatting server listening on port ${PORT}`))
