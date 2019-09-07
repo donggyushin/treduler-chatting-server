@@ -47,13 +47,23 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
         console.log('user disconnected', socket.user);
         const updatedClients = clients.filter(client => {
-            if (client.user.email === socket.user.email && client.boardId === socket.boardId) {
-                return false
+
+            if (socket.user && socket.boardId) {
+
+                if (client.user.email === socket.user.email && client.boardId === socket.boardId) {
+                    return false
+                } else {
+                    return true
+                }
             } else {
                 return true
             }
+
         })
         clients = updatedClients
+        clients.map(client => {
+            console.log('남아있는 유저: ', client.user.email)
+        })
         const allMembers = members()
         io.emit('member_list', allMembers)
     })
@@ -67,7 +77,22 @@ io.on('connection', socket => {
                 return false;
             }
         })
-        usersToSendMessage.emit('sendMessage', data);
+        const date = new Date();
+        const hour = date.getHours().toString();
+        const minutes = date.getMinutes().toString();
+        const readableTime = hour + ":" + minutes;
+        const dataToClient = {
+            user,
+            boardId,
+            message,
+            time: date,
+            readableTime
+        }
+        usersToSendMessage.map(userToSendMessage => {
+            console.log('send message to', userToSendMessage.user.email)
+            userToSendMessage.emit('sendMessage', dataToClient)
+        })
+        // usersToSendMessage.emit('sendMessage', data);
     })
 
 
