@@ -40,9 +40,23 @@ io.on('connection', socket => {
         if (exist === false) {
             clients.push(socket)
             console.log('user logged in: ', socket.user)
-            const allMembers = members();
-            io.emit('member_list', allMembers)
+            const usersToSendMessage = clients.filter(client => {
+                if (client.boardId === boardId) {
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            const allMembers = clients.map(client => {
+                if (client.boardId === boardId) {
+                    return client.user
+                }
+            })
+            usersToSendMessage.map(userToSendMessage => {
+                userToSendMessage.emit('allMembers', allMembers)
+            })
         }
+
     })
     socket.on('disconnect', () => {
         console.log('user disconnected', socket.user);
@@ -64,8 +78,6 @@ io.on('connection', socket => {
         clients.map(client => {
             console.log('남아있는 유저: ', client.user.email)
         })
-        const allMembers = members()
-        io.emit('member_list', allMembers)
     })
 
     socket.on('sendMessage', data => {
@@ -91,18 +103,12 @@ io.on('connection', socket => {
         usersToSendMessage.map(userToSendMessage => {
             console.log('send message to', userToSendMessage.user.email)
             userToSendMessage.emit('sendMessage', dataToClient)
+
         })
-        // usersToSendMessage.emit('sendMessage', data);
     })
 
 
 })
 
-const members = () => {
-    const members = clients.map(client => {
-        return client.user
-    })
-    return members
-}
 
 server.listen(PORT, () => console.log(`Chatting server listening on port ${PORT}`))
