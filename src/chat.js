@@ -52,6 +52,8 @@ io.on('connection', socket => {
                     return client.user
                 }
             })
+
+
             usersToSendMessage.map(userToSendMessage => {
                 userToSendMessage.emit('allMembers', allMembers)
             })
@@ -60,6 +62,12 @@ io.on('connection', socket => {
     })
     socket.on('disconnect', () => {
         console.log('user disconnected', socket.user);
+        const boardIdOfLeftUser = socket.boardId;
+        const userOfLeftUSer = socket.user;
+
+
+        // update clients list
+
         const updatedClients = clients.filter(client => {
 
             if (socket.user && socket.boardId) {
@@ -75,10 +83,30 @@ io.on('connection', socket => {
 
         })
         clients = updatedClients
-        clients.map(client => {
-            console.log('남아있는 유저: ', client.user.email)
+
+        // Have to find all member sockets in same board with left user. 
+        const allMemberSocketsToSendEmitMessage = clients.filter(client => {
+            if (client.boardId === boardIdOfLeftUser) {
+                return true;
+            } else {
+                return false;
+            }
+        })
+
+        // Have to find all members in same board with left user. 
+        const allMembersInSameBoardIdWithLeftUser = clients.map(client => {
+            if (client.boardId === boardIdOfLeftUser) {
+                return client.user;
+            }
+        })
+
+        allMemberSocketsToSendEmitMessage.map(member => {
+            member.emit('allMembers', allMembersInSameBoardIdWithLeftUser)
         })
     })
+
+
+
 
     socket.on('sendMessage', data => {
         const { user, boardId, message } = data;
@@ -111,4 +139,4 @@ io.on('connection', socket => {
 })
 
 
-server.listen(PORT, () => console.log(`Chatting server listening on port ${PORT}`))
+server.listen(PORT, () => console.log(`server listening on port ${PORT}`))
