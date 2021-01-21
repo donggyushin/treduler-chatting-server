@@ -9,7 +9,7 @@
     "babel-preset-es2015": "^6.24.1",
     "express": "^4.17.1",
     "nodemon": "^1.19.2",
-    "socket.io": "^2.2.0"
+    "socket.io": "^2.4.0"
   },
   "scripts": {
     "build": "babel --presets es2015 -d dist/ src",
